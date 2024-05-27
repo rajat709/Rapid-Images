@@ -1,2 +1,2 @@
 #🟡 Service Status: Offline
-🟢 Service Status: Online
+Service Status: Online
