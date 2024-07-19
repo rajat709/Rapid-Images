@@ -8,7 +8,6 @@ As a valued user, please consider these points before you proceed:
 4. Dataoorts services are available on-demand as well as on a reservation basis, both of which operate on a prepaid model.
 5. We are currently in beta trial mode, so your instance may stop without prior notice. However, this is an extremely rare occurrence and will only happen while we are in beta.
 6. We do not guarantee the constant availability of each GPU model instance type at all times. In case of high demand, you may have to wait until an instance becomes available. We are working diligently to scale our infrastructure to meet all demands consistently.
-7. All available instances are shown in real-time on our (https://dataoorts.com) at the left middle section "Available Instances".
 
 For more details, please review our:
 - Privacy Policy: (https://dataoorts.com/privacy-policy)
