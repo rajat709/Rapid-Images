@@ -4,3 +4,4 @@ gpu-a100-80-1; $0.55/Hour
 gpu-a10-24-1; $0.35/Hour
 gpu-gh200-96-1; $0.88/Hour
 cpu-16v-48g; $0.06/Hour
+gpu-h100-80-1; $0.69/Hour
