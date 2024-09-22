@@ -1,2 +1,2 @@
-gpu-a6000-48-1; $0.43/Hour
+gpu-gh200-96-1; $0.88/Hour
 cpu-2v-8g; $0.02/Hour
