@@ -1,1 +1,0 @@
-Ubuntu Server 22.04 LTS R550 CUDA 12.4 with Docker
