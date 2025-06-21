@@ -1,2 +1,2 @@
-Service Status: Online
-#Service Status: Offline
+Uptime Status: Online
+#Uptime Status: Offline
