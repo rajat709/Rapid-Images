@@ -1,9 +1,9 @@
-GPU Instance, Total Dedicated GPUs, Instance Type, VRAM, CPU, RAM, Storage, Regions Available, Total Running Cost,
-H100 PCIe, 1, VM, 80 GB, 28, 180 GiB, 850 GiB, Canada, $1.54 Per hour,
-H100 PCIe, 2, VM, 160 GB, 56, 360 GiB, 1700 GiB, Canada, $3.08 Per hour,
-H100 PCIe, 4, VM, 320 GB, 112, 720 GiB, 3400 GiB, Canada, $6.16 Per hour,
-H100 PCIe, 8, VM, 640 GB, 224, 1440 GiB, 6800 GiB, Canada, $12.32 Per hour,
-A100 PCIe, 1, VM, 80 GB, 28, 120 GiB, 850 GiB, Canada, $1.09 Per hour,
-A100 PCIe, 2, VM, 160 GB, 56, 240 GiB, 1700 GiB, Canada, $2.18 Per hour,
-A100 PCIe, 4, VM, 320 GB, 112, 480 GiB, 3400 GiB, Canada, $4.36 Per hour,
-A100 PCIe, 8, VM, 640 GB, 224, 960 GiB, 6800 GiB, Canada, $8.72 Per hour,
+GPU Instance, Total Dedicated GPUs, Instance Type, VRAM, CPU, RAM, Storage, Regions Available, Total Running Cost
+H100 PCIe, 1, VM, 80 GB, 28, 180 GiB, 850 GiB, Canada, $1.54 Per hour
+H100 PCIe, 2, VM, 160 GB, 56, 360 GiB, 1700 GiB, Canada, $3.08 Per hour
+H100 PCIe, 4, VM, 320 GB, 112, 720 GiB, 3400 GiB, Canada, $6.16 Per hour
+H100 PCIe, 8, VM, 640 GB, 224, 1440 GiB, 6800 GiB, Canada, $12.32 Per hour
+A100 PCIe, 1, VM, 80 GB, 28, 120 GiB, 850 GiB, Canada, $1.09 Per hour
+A100 PCIe, 2, VM, 160 GB, 56, 240 GiB, 1700 GiB, Canada, $2.18 Per hour
+A100 PCIe, 4, VM, 320 GB, 112, 480 GiB, 3400 GiB, Canada, $4.36 Per hour
+A100 PCIe, 8, VM, 640 GB, 224, 960 GiB, 6800 GiB, Canada, $8.72 Per hour
