@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ceres - Your Mini AI Datacenter</title>
+    <link rel="icon" type="image/png" href="ceres.png">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23e1bee7;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23c5cae9;stop-opacity:1' /%3E%3C/linearGradient%3E%3ClinearGradient id='grad2' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%239c27b0;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%233f51b5;stop-opacity:1' /%3E%3C/defs%3E%3Cpath d='M 40,20 C 80,20 100,60 80,80 C 60,100 20,80 20,40 Q 50,50 40,20 Z' fill='url(%23grad2)'/%3E%3Ccircle cx='50' cy='50' r='30' fill='url(%23grad1)'/%3E%3C/svg%3E">
+    <style>
+        :root { --primary-color: #9c27b0; --secondary-color: #3f51b5; --background-color: #0d0c0f; --surface-color: rgba(22, 20, 28, 0.7); --border-color: rgba(255, 255, 255, 0.15); --text-color: #e0e0e0; --text-muted-color: #a0a0a0; --glow-color: rgba(156, 39, 176, 0.5); --error-color: #f44336; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--background-color); color: var(--text-color); background-image: radial-gradient(circle at 15% 50%, var(--glow-color), transparent 30%), radial-gradient(circle at 85% 30%, rgba(63, 81, 181, 0.4), transparent 30%); background-attachment: fixed; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 2rem; }
+        .notification { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); padding: 1rem 2rem; border-radius: 8px; color: white; font-weight: 500; z-index: 200; transition: top 0.5s ease-in-out; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .notification.show { top: 20px; }
+        .notification.error { background-color: var(--error-color); }
+        .container { width: 100%; max-width: 800px; margin-top: 50px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 2.5rem 3rem; overflow: hidden; animation: pulse-glow 5s infinite alternate; }
+        @keyframes pulse-glow { from { box-shadow: 0 0 15px -5px rgba(156, 39, 176, 0.3), 0 8px 32px 0 rgba(0, 0, 0, 0.37); } to { box-shadow: 0 0 30px -5px var(--glow-color), 0 8px 32px 0 rgba(0, 0, 0, 0.37); } }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 2.5rem; font-weight: 700; letter-spacing: -1px; background: -webkit-linear-gradient(45deg, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .header p { font-size: 1.1rem; color: var(--text-muted-color); margin-top: 0.5rem; }
+        .form-steps { position: relative; }
+        .form-step { display: none; flex-direction: column; gap: 1.5rem; animation: fadeIn 0.5s ease-in-out; }
+        .form-step.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .input-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+        .form-field { display: flex; flex-direction: column; }
+        .form-field label { margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500; color: var(--text-muted-color); }
+        .form-field label span { color: #777; font-style: italic; }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="datetime-local"], textarea { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); color: var(--text-color); padding: 0.8rem 1rem; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s, box-shadow 0.3s; width: 100%; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--glow-color); }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.8); cursor: pointer; }
+        textarea { min-height: 120px; resize: vertical; }
+        .custom-select-wrapper { position: relative; width: 100%; } .custom-select { position: relative; } .custom-select-trigger { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1rem; font-size: 1rem; font-weight: 500; color: var(--text-color); background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.3s; } .custom-select-trigger:hover { border-color: var(--primary-color); } .custom-select-trigger .arrow { position: relative; height: 10px; width: 10px; border-left: 2px solid var(--text-muted-color); border-bottom: 2px solid var(--text-muted-color); transform: rotate(-45deg) translateY(-50%); transition: transform 0.3s; } .custom-options { position: absolute; top: 100%; left: 0; right: 0; background: #1a1820; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 8px; max-height: 300px; overflow-y: auto; z-index: 10; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 0.3s, visibility 0.3s, transform 0.3s; padding: 0.5rem; } .custom-select.open .custom-options { opacity: 1; visibility: visible; transform: translateY(0); } .custom-select.open .custom-select-trigger .arrow { transform: rotate(135deg) translateY(0); } .custom-select-search { width: 100%; padding: 0.8rem; margin-bottom: 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-color); } .custom-option { position: relative; display: block; padding: 0.8rem 1rem; color: var(--text-muted-color); cursor: pointer; transition: background-color 0.2s, color 0.2s; border-radius: 6px; line-height: 1.5; } .custom-option:hover, .custom-option.selected { background-color: var(--primary-color); color: white; } .custom-option strong { display: block; } .custom-option small { display: block; font-size: 0.85rem; opacity: 0.8; } ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #555; }
+        #custom-requirement-area > label { margin-bottom: 1rem; }
+        .payment-options { display: flex; gap: 1rem; margin-bottom: 1.5rem; transition: border 0.3s; border: 1px solid transparent; border-radius: 9px;}
+        .payment-option { flex: 1; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s ease-in-out; text-align: center;}
+        .payment-option.selected { border-color: var(--primary-color); background: rgba(156, 39, 176, 0.1); }
+        .review-section { background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 1.5rem; max-height: 300px; overflow-y: auto; }
+        .review-item { margin-bottom: 0.75rem; line-height: 1.5; }
+        .review-item strong { color: var(--text-muted-color); min-width: 130px; display: inline-block; }
+        .btn-group { display: flex; justify-content: space-between; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
+        .btn { padding: 0.8rem 1.8rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn:disabled { background: #555; color: #999; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-primary { background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: white; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+        .btn-primary:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4); }
+        .btn-secondary { background-color: transparent; color: var(--text-muted-color); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background-color: var(--border-color); color: var(--text-color); }
+        .success-page { text-align: center; animation: fadeIn 0.5s ease-in-out; }
+        .success-icon { font-size: 4rem; color: #4caf50; margin-bottom: 1rem; }
+        .success-page h2 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .success-page p { color: var(--text-muted-color); font-size: 1.1rem; }
+        .help-footer { position: fixed; bottom: 15px; right: 20px; font-size: 0.85rem; color: var(--text-muted-color); background-color: rgba(13, 12, 15, 0.8); padding: 6px 12px; border-radius: 8px; z-index: 100; backdrop-filter: blur(5px); }
+        .help-footer a { color: var(--primary-color); text-decoration: none; font-weight: 500; }
+        .help-footer a:hover { text-decoration: underline; }
+        #instanceCountField { margin-top: 1.5rem; }
+        .custom-req-toggle { cursor: pointer; display: flex; align-items: center; gap: 0.75rem; margin-top: 1rem; }
+        .custom-req-toggle input[type="checkbox"] { cursor: pointer; width: 1.2em; height: 1.2em; accent-color: var(--primary-color); }
+        #custom-requirement-area { width: 100%; margin-bottom: 1.5rem; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+        .duration-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; align-items: flex-end; }
+        .cost-summary { margin-top: 1rem; padding: 1.5rem; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid var(--border-color); }
+        .cost-summary h3 { margin-bottom: 1rem; font-weight: 600; }
+        .cost-item { display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: 1rem; }
+        .cost-item span:last-child { font-weight: 600; color: var(--text-color); }
+        .cost-total { border-top: 1px solid var(--border-color); margin-top: 0.5rem; padding-top: 1rem; font-size: 1.2rem; font-weight: 700; }
+        #cost-instance-details { font-size: 0.9rem; color: var(--text-muted-color); padding-bottom: 1rem; border-bottom: 1px dashed var(--border-color); margin-bottom: 1rem; }
+
+        /* Styles to slightly shrink Step 1 */
+        #step-1 {
+            gap: 1.2rem; /* Reduced vertical gap between input rows */
+        }
+        #step-1 .input-group {
+            gap: 1.2rem; /* Reduced horizontal gap between inputs */
+        }
+        #step-1 .form-field label {
+            font-size: 0.85rem; /* Slightly smaller label text */
+            margin-bottom: 0.4rem; /* Tighter space between label and input */
+        }
+        #step-1 input {
+            padding: 0.7rem 0.9rem; /* Slightly less padding inside the input box */
+            font-size: 0.95rem; /* Slightly smaller text inside the input box */
+        }
+    </style>
+</head>
+<body>
+    <div id="notification" class="notification"></div>
+
+    <div class="container">
+        <div class="header"><h1>Ceres</h1><p>Your Mini AI Datacenter</p></div>
+
+        <form id="reservationForm">
+            <div class="form-steps">
+                <!-- Step 1: Personal Information -->
+                <div class="form-step" id="step-1">
+                    <div class="input-group">
+                        <div class="form-field"><label for="firstName">First Name</label><input type="text" id="firstName" name="firstName" required></div>
+                        <div class="form-field"><label for="lastName">Last Name</label><input type="text" id="lastName" name="lastName" required></div>
+                    </div>
+                    <div class="input-group">
+                        <div class="form-field"><label for="title">Title <span>(Optional)</span></label><input type="text" id="title" name="title"></div>
+                        <div class="form-field"><label for="company">Company <span>(Optional)</span></label><input type="text" id="company" name="company"></div>
+                    </div>
+                    <div class="input-group">
+                        <div class="form-field"><label for="country">Country</label><input type="text" id="country" name="country" required></div>
+                        <div class="form-field"><label for="city">City</label><input type="text" id="city" name="city" required></div>
+                    </div>
+                    <div class="input-group">
+                        <div class="form-field"><label for="email">Best Email for Contact</label><input type="email" id="email" name="email" required></div>
+                        <div class="form-field"><label for="phone">Phone Number <span>(Optional)</span></label><input type="tel" id="phone" name="phone"></div>
+                    </div>
+                    <div class="btn-group"><span></span><button type="button" class="btn btn-primary" onclick="nextStep()">Next</button></div>
+                </div>
+
+                <!-- Step 2: Instance Selection -->
+                <div class="form-step" id="step-2">
+                    <div id="instance-selection-area">
+                        <div class="form-field">
+                            <label for="gpuInstance">Select GPU Instance</label>
+                            <div class="custom-select-wrapper">
+                                <div class="custom-select"><div class="custom-select-trigger"><span>Select an instance...</span><div class="arrow"></div></div>
+                                    <div class="custom-options"><input type="text" class="custom-select-search" placeholder="Search instances..."></div>
+                                </div>
+                            </div><input type="hidden" id="gpuInstance" name="gpuInstance" required>
+                        </div>
+                        <div class="form-field" id="instanceCountField">
+                            <label for="instanceCount">How many such instances do you need?</label>
+                            <input type="number" id="instanceCount" name="instanceCount" value="1" min="1" max="512" step="1" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                        </div>
+                    </div>
+                    <div class="custom-req-toggle"><input type="checkbox" id="customRequirementCheck" onchange="toggleCustomRequirement()"><label for="customRequirementCheck">I have a custom requirement</label></div>
+                    <div class="form-field" id="custom-requirement-area" style="display: none;">
+                        <label for="customRequirementText" style="display: block; margin-bottom: 12px;">
+                            Describe your custom requirement (min 20 words)
+                        </label>
+                        <textarea id="customRequirementText" name="customRequirementText" placeholder="e.g., I need a cluster of 16x A100s with a specific network configuration..."></textarea>
+                    </div>
+                    <div class="btn-group"><button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button><button type="button" class="btn btn-primary" id="step2-next" onclick="nextStep()">Next</button></div>
+                </div>
+                
+                <!-- Step 3: Scheduling & Cost -->
+                <div class="form-step" id="step-3">
+                    <div class="form-field">
+                        <label for="startTime">When do you need the instance? (IST)</label>
+                        <input type="datetime-local" id="startTime" name="startTime" required>
+                    </div>
+                    <div class="form-field">
+                        <label>How long do you need Instance? (min 12 hours, max 1 year)</label>
+                        <div class="duration-group">
+                            <div class="duration-field"><label for="durationYears">Years</label><input type="number" id="durationYears" name="durationYears" min="0" max="1" placeholder="0"></div>
+                            <div class="duration-field"><label for="durationMonths">Months</label><input type="number" id="durationMonths" name="durationMonths" min="0" placeholder="0"></div>
+                            <div class="duration-field"><label for="durationWeeks">Weeks</label><input type="number" id="durationWeeks" name="durationWeeks" min="0" placeholder="0"></div>
+                            <div class="duration-field"><label for="durationHours">Hours</label><input type="number" id="durationHours" name="durationHours" min="0" placeholder="0"></div>
+                        </div>
+                        <input type="hidden" name="duration" id="duration" required>
+                    </div>
+                    <div class="cost-summary">
+                        <h3>Real-time Cost Estimate</h3>
+                        <div id="cost-instance-details">Select an instance and duration...</div>
+                        <div class="cost-item"><span>Subtotal Instance Cost</span><span id="cost-subtotal">$0.00</span></div>
+                        <div class="cost-item"><span>GST/VAT/Sales Tax (18%)</span><span id="cost-tax">$0.00</span></div>
+                        <div class="cost-item"><span>Payment Gateway Fees (3%)</span><span id="cost-gateway">$0.00</span></div>
+                        <div class="cost-item cost-total"><span>Total Cost</span><span id="cost-total">$0.00</span></div>
+                    </div>
+                    <div class="btn-group"><button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button><button type="button" class="btn btn-primary" onclick="nextStep()">Next</button></div>
+                </div>
+                
+                <!-- Step 4: Payment & Review -->
+                <div class="form-step" id="step-4">
+                    <h3>Select Payment Method</h3>
+                    <div class="payment-options">
+                        <div class="payment-option selected" id="payment-crypto" onclick="selectPayment('crypto')">
+                            <input type="radio" name="paymentMethod" value="Crypto Payment" style="display:none;" required checked>
+                            <strong>Crypto Payment</strong>
+                        </div>
+                        <div class="payment-option" id="payment-fiat" onclick="selectPayment('fiat')">
+                            <input type="radio" name="paymentMethod" value="Card/UPI/Bank Transfer" style="display:none;">
+                            <strong>Card / UPI / Bank Transfer</strong>
+                        </div>
+                    </div>
+                    <div class="review-section"><h3>Order Overview</h3><div id="review-content"></div></div>
+                    <div class="btn-group"><button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button><button type="submit" class="btn btn-primary">Place Order</button></div>
+                </div>
+            </div>
+        </form>
+        
+        <div id="success-page" class="success-page" style="display: none;">
+            <div class="success-icon">✓</div><h2 id="success-title">Order Placed Successfully!</h2><p id="success-message">Thank you. We will contact you shortly with the instance details.</p>
+        </div>
+    </div>
+
+    <div class="help-footer">Need any help? Reach us at <a href="mailto:help@dataoorts.com">help@dataoorts.com</a></div>
+
+<script>
+    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1393624294684360876/s08ygYLbeOAu2em3bzcrG-4tD7u4a8wxi_DWBc3EUvYSiZvSmfbRtAbHBpLFjs8er4Cz';
+    const TAX_RATE = 0.18, GATEWAY_FEE_RATE = 0.03;
+    let currentStep = 1, instanceData = [], notificationTimeout;
+    const form = document.getElementById('reservationForm');
+    const formSteps = document.querySelectorAll('.form-step');
+    const customReqTextarea = document.getElementById('customRequirementText');
+    const step2NextButton = document.getElementById('step2-next');
+    const notificationEl = document.getElementById('notification');
+
+    document.addEventListener('DOMContentLoaded', () => {
+        selectPayment('crypto', false); 
+        fetchInstanceData().then(() => { loadFormData(); });
+        setupEventListeners();
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('startTime').min = now.toISOString().slice(0,16);
+    });
+    
+    function setupEventListeners() {
+        form.addEventListener('input', saveFormData);
+        form.addEventListener('submit', handleFormSubmit);
+        customReqTextarea.addEventListener('input', validateCustomRequirementButton);
+        document.querySelectorAll('.duration-group input').forEach(input => {
+            input.addEventListener('input', calculateCost);
+        });
+    }
+    
+    function showNotification(message, type = 'error') {
+        clearTimeout(notificationTimeout);
+        notificationEl.textContent = message;
+        notificationEl.className = `notification ${type}`;
+        notificationEl.classList.add('show');
+        notificationTimeout = setTimeout(() => { notificationEl.classList.remove('show'); }, 5000);
+    }
+
+    function saveFormData() {
+        const data = Object.fromEntries(new FormData(form).entries());
+        localStorage.setItem('ceresFormData', JSON.stringify(data));
+        localStorage.setItem('ceresCurrentStep', currentStep);
+    }
+
+    function loadFormData() {
+        const savedData = localStorage.getItem('ceresFormData');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            for (const key in data) {
+                if (form.elements[key]) {
+                    const element = form.elements[key];
+                    if (element.type === 'radio' && element.name === 'paymentMethod') {
+                        if (element.value === data[key]) {
+                            selectPayment(data[key].includes('Crypto') ? 'crypto' : 'fiat', false);
+                        }
+                    } else if (element.type === 'checkbox') {
+                        element.checked = data[key] === 'on';
+                    } else { element.value = data[key]; }
+                }
+            }
+            if (data.gpuInstance && instanceData.length > 0) {
+                const trigger = document.querySelector('.custom-select-trigger span');
+                if (instanceData[data.gpuInstance]) {
+                   trigger.textContent = instanceData[data.gpuInstance]['GPU Instance'] + ` (${instanceData[data.gpuInstance]['Total Dedicated GPUs']} GPU)`;
+                }
+            }
+            if (document.getElementById('customRequirementCheck').checked) toggleCustomRequirement();
+            calculateCost();
+        }
+        const savedStep = localStorage.getItem('ceresCurrentStep');
+        goToStep(savedStep ? parseInt(savedStep) : 1, true);
+    }
+
+    function goToStep(stepNumber, skipSave = false) {
+        if (stepNumber >= 1 && stepNumber <= formSteps.length) {
+            formSteps.forEach(s => s.classList.remove('active'));
+            currentStep = stepNumber;
+            formSteps[currentStep - 1].classList.add('active');
+            if(currentStep === 4) populateReview();
+            if (!skipSave) saveFormData();
+        }
+    }
+    
+    function nextStep() {
+        if (!validateStep(currentStep)) return;
+        if (currentStep < formSteps.length) goToStep(currentStep + 1);
+    }
+
+    function prevStep() { if (currentStep > 1) goToStep(currentStep - 1); }
+
+    function validateStep(step) {
+        const el = document.getElementById(`step-${step}`);
+        let allValid = true;
+
+        document.querySelectorAll('.duration-group input').forEach(i => i.style.borderColor = '');
+
+        for (const input of el.querySelectorAll('[required]')) {
+            input.style.borderColor = '';
+            if (input.closest('.custom-select-trigger')) input.closest('.custom-select-trigger').style.borderColor = '';
+            if (input.closest('.payment-options')) input.closest('.payment-options').style.borderColor = 'transparent';
+            
+            let isInvalid = false;
+            let msg = `Please fill out the '${input.name || input.id}' field.`;
+            
+            if(input.id === 'duration') parseDuration();
+            
+            if (input.type === 'radio') {
+                if (![...el.querySelectorAll(`input[name="${input.name}"]`)].some(r => r.checked)) {
+                    isInvalid = true; msg = "Please select a payment method.";
+                    input.closest('.payment-options').style.borderColor = 'var(--error-color)';
+                }
+            } else if (input.id === 'instanceCount') {
+                const val = parseInt(input.value, 10);
+                if (isNaN(val) || val < 1 || val > 512) { isInvalid = true; msg = "Instance count must be between 1 and 512."; }
+            } else if (input.id === 'duration' && !input.value) {
+                isInvalid = true; msg = "Please specify a duration of at least 12 hours.";
+            } else if (!input.value) { isInvalid = true; }
+            
+            if (isInvalid) {
+                if(allValid) showNotification(msg);
+                allValid = false;
+                input.style.borderColor = 'var(--error-color)';
+                if (input.closest('.custom-select-trigger')) input.closest('.custom-select-trigger').style.borderColor = 'var(--error-color)';
+            }
+        }
+
+        if (step === 3) {
+            const totalHours = parseDuration();
+            if (totalHours > 8760) {
+                if(allValid) showNotification("Total duration cannot exceed 1 year.");
+                allValid = false;
+                document.querySelectorAll('.duration-group input').forEach(i => i.style.borderColor = 'var(--error-color)');
+            }
+        }
+        return allValid;
+    }
+
+    async function fetchInstanceData() {
+        const csvUrl = 'https://raw.githubusercontent.com/rajat709/Rapid-Images/main/reserve.csv';
+        try {
+            const res = await fetch(csvUrl), txt = await res.text();
+            const rows = txt.split('\n').filter(r => r.trim() !== '');
+            const headers = rows.shift().split(',').map(h => h.trim());
+            instanceData = rows.map(r => {
+                const vals = r.split(','), inst = {};
+                headers.forEach((h, i) => { inst[h] = vals[i] ? vals[i].trim() : 'N/A'; });
+                return inst;
+            });
+            setupCustomSelect();
+        } catch (e) { console.error('Failed to fetch instance data:', e); showNotification('Error: Could not load instance data.'); }
+    }
+    
+    function setupCustomSelect() {
+        const sel = document.querySelector('.custom-select'), trig = sel.querySelector('.custom-select-trigger'), optsCon = sel.querySelector('.custom-options'), search = sel.querySelector('.custom-select-search'), hidden = document.getElementById('gpuInstance');
+        instanceData.forEach((inst, i) => {
+            const opt = document.createElement('div'); opt.className = 'custom-option'; opt.dataset.value = i;
+            opt.innerHTML = `
+                <strong>${inst['GPU Instance']} (${inst['Total Dedicated GPUs']} GPU)</strong>
+                <small>${inst['VRAM']} VRAM | ${inst['CPU']} CPU | ${inst['RAM']} RAM | ${inst['Storage']} Storage</small>
+                <small>Type: ${inst['Instance Type']} | OS: ${inst['OS Image Available']}</small>
+                <small>Region: ${inst['Regions Available']} | Cost: ${inst['Total Running Cost']}</small>
+            `;
+            optsCon.appendChild(opt);
+        });
+        const opts = optsCon.querySelectorAll('.custom-option');
+        trig.addEventListener('click', () => sel.classList.toggle('open'));
+        opts.forEach(opt => opt.addEventListener('click', () => {
+            hidden.value = opt.dataset.value; trig.querySelector('span').textContent = opt.querySelector('strong').textContent;
+            sel.classList.remove('open'); opts.forEach(o => o.classList.remove('selected')); opt.classList.add('selected');
+            trig.style.borderColor = ''; calculateCost();
+        }));
+        search.addEventListener('input', () => {
+            const filt = search.value.toLowerCase();
+            opts.forEach(opt => { opt.style.display = opt.textContent.toLowerCase().includes(filt) ? '' : 'none'; });
+        });
+        window.addEventListener('click', e => { if (!sel.contains(e.target)) sel.classList.remove('open'); });
+    }
+
+    function toggleCustomRequirement() {
+        const isChecked = document.getElementById('customRequirementCheck').checked;
+        document.getElementById('instance-selection-area').style.display = isChecked ? 'none' : 'block';
+        document.getElementById('custom-requirement-area').style.display = isChecked ? 'block' : 'none';
+        document.getElementById('gpuInstance').required = !isChecked; document.getElementById('instanceCount').required = !isChecked;
+        customReqTextarea.required = isChecked;
+        if (isChecked) {
+            step2NextButton.textContent = 'Submit Inquiry'; step2NextButton.onclick = () => handleFormSubmit(null, true);
+            validateCustomRequirementButton();
+        } else {
+            step2NextButton.textContent = 'Next'; step2NextButton.onclick = nextStep; step2NextButton.disabled = false;
+        }
+    }
+    
+    function validateCustomRequirementButton() {
+        if (!document.getElementById('customRequirementCheck').checked) { step2NextButton.disabled = false; return; }
+        const wordCount = customReqTextarea.value.trim() === '' ? 0 : customReqTextarea.value.trim().split(/\s+/).length;
+        step2NextButton.disabled = (wordCount < 20);
+    }
+
+    function parseDuration() {
+        let totalHours = 0, text = [], dur = { y: 'durationYears', m: 'durationMonths', w: 'durationWeeks', h: 'durationHours' };
+        for (const k in dur) {
+            const val = parseInt(document.getElementById(dur[k]).value) || 0;
+            if (val > 0) text.push(`${val}${k}`);
+            if (k === 'y') totalHours += val * 365 * 24; else if (k === 'm') totalHours += val * 30 * 24;
+            else if (k === 'w') totalHours += val * 7 * 24; else totalHours += val;
+        }
+        document.getElementById('duration').value = totalHours >= 12 ? text.join(' ') : '';
+        return totalHours;
+    }
+
+    function calculateCost() {
+        const totalHours = parseDuration();
+        const instIdx = document.getElementById('gpuInstance').value, count = parseInt(document.getElementById('instanceCount').value) || 1;
+        if (instIdx === '' || totalHours < 12 || !instanceData[instIdx]) {
+            document.getElementById('cost-instance-details').textContent = 'Select instance & valid duration (min 12 hours).';
+            ['subtotal', 'tax', 'gateway', 'total'].forEach(id => document.getElementById(`cost-${id}`).textContent = '$0.00');
+            return;
+        }
+        const inst = instanceData[instIdx], hourly = parseFloat(inst['Total Running Cost'].replace(/[^0-9.-]+/g,""));
+        const sub = hourly * totalHours * count, tax = sub * TAX_RATE, gateway = sub * GATEWAY_FEE_RATE;
+        document.getElementById('cost-instance-details').textContent = `${count} x ${inst['GPU Instance']} (${inst['Total Dedicated GPUs']} GPU per instance)`;
+        document.getElementById('cost-subtotal').textContent = `$${sub.toFixed(2)}`;
+        document.getElementById('cost-tax').textContent = `$${tax.toFixed(2)}`;
+        document.getElementById('cost-gateway').textContent = `$${gateway.toFixed(2)}`;
+        document.getElementById('cost-total').textContent = `$${(sub + tax + gateway).toFixed(2)}`;
+    }
+
+    function selectPayment(method, doSave = true) {
+        document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+        const selOpt = document.getElementById(`payment-${method}`);
+        selOpt.classList.add('selected'); selOpt.querySelector('input').checked = true;
+        document.querySelector('.payment-options').style.borderColor = 'transparent';
+        if (doSave) { saveFormData(); }
+        populateReview();
+    }
+    
+    function populateReview() {
+        const el = form.elements;
+        const instIdx = el.gpuInstance.value;
+        const selInst = (instIdx !== '' && instanceData[instIdx]) ? instanceData[instIdx] : null;
+        const payMth = el.paymentMethod.value || 'Not selected';
+
+        let reviewHTML = `
+            <div class="review-item"><strong>Name:</strong> ${el.firstName.value || 'N/A'} ${el.lastName.value || ''}</div>
+            <div class="review-item"><strong>Company:</strong> ${el.company.value || 'N/A'}</div>
+            <div class="review-item"><strong>Title:</strong> ${el.title.value || 'N/A'}</div>
+            <div class="review-item"><strong>Contact Email:</strong> ${el.email.value || 'N/A'}</div>
+            <div class="review-item"><strong>Contact Phone:</strong> ${el.phone.value || 'N/A'}</div>
+            <div class="review-item"><strong>Country:</strong> ${el.country.value || 'N/A'}</div>
+            <div class="review-item"><strong>City:</strong> ${el.city.value || 'N/A'}</div>
+            <hr style="border-color:var(--border-color);margin:1rem 0;">`;
+        
+        if (selInst) {
+            reviewHTML += `
+                <div class="review-item"><strong>Instance Quantity:</strong> ${el.instanceCount.value}</div>
+                <div class="review-item"><strong>GPU Model:</strong> ${selInst['GPU Instance']}</div>
+                <div class="review-item"><strong>GPU Per Instance:</strong> ${selInst['Total Dedicated GPUs']}</div>
+                <div class="review-item"><strong>Total GPUs:</strong> ${parseInt(selInst['Total Dedicated GPUs']) * parseInt(el.instanceCount.value)}</div>
+                <div class="review-item"><strong>Instance Type:</strong> ${selInst['Instance Type']}</div>
+                <div class="review-item"><strong>Base OS Image:</strong> ${selInst['OS Image Available']}</div>
+                <div class="review-item"><strong>Available Regions:</strong> ${selInst['Regions Available']}</div>
+                <div class="review-item"><strong>Instance Specifications:</strong> ${selInst['VRAM']} VRAM, ${selInst['CPU']} CPU, ${selInst['RAM']} RAM, ${selInst['Storage']} Storage</div>`;
+        } else {
+             reviewHTML += `
+                <div class="review-item"><strong>Instance:</strong> Not selected yet</div>
+                <div class="review-item"><strong>GPU Per Instance:</strong> N/A</div>
+                <div class="review-item"><strong>Total GPUs:</strong> N/A</div>
+                <div class="review-item"><strong>Type:</strong> N/A</div>
+                <div class="review-item"><strong>OS:</strong> N/A</div>
+                <div class="review-item"><strong>Region:</strong> N/A</div>
+                <div class="review-item"><strong>Specifications:</strong> N/A</div>`;
+        }
+        
+        reviewHTML += `<hr style="border-color:var(--border-color);margin:1rem 0;">
+            <div class="review-item"><strong>Start Time:</strong> ${el.startTime.value ? new Date(el.startTime.value).toLocaleString() : 'Not set'}</div>
+            <div class="review-item"><strong>Duration:</strong> ${el.duration.value || 'Not set'}</div>
+            <hr style="border-color:var(--border-color);margin:1rem 0;">
+            <div class="review-item"><strong>Subtotal:</strong> ${document.getElementById('cost-subtotal').textContent}</div>
+            <div class="review-item"><strong>Tax (18%):</strong> ${document.getElementById('cost-tax').textContent}</div>
+            <div class="review-item"><strong>Gateway (3%):</strong> ${document.getElementById('cost-gateway').textContent}</div>
+            <div class="review-item"><strong>Total Cost:</strong> ${document.getElementById('cost-total').textContent}</div>
+            <div class="review-item"><strong>Pay Method:</strong> ${payMth}</div>`;
+
+        document.getElementById('review-content').innerHTML = reviewHTML;
+    }
+
+    async function handleFormSubmit(event, isCustom = false) {
+        if (event) event.preventDefault();
+        
+        for (let i = 1; i <= (isCustom ? 2 : currentStep); i++) { if (!validateStep(i)) { if (i < currentStep) goToStep(i); return; } }
+
+        const data = Object.fromEntries(new FormData(form).entries());
+        let payload, btn = isCustom ? step2NextButton : form.querySelector('button[type="submit"]');
+
+        if (isCustom) {
+            if (step2NextButton.disabled) { showNotification('Requirement must be at least 20 words.'); return; }
+            payload = { username: "Ceres - Custom Inquiry", embeds: [{ title: "New Custom GPU Requirement", color: 10181046, fields: [ { name: "Name", value: `${data.firstName} ${data.lastName}`, inline: true }, { name: "Company", value: data.company || 'N/A', inline: true }, { name: "Contact Email", value: `[${data.email}](mailto:${data.email})`}, { name: "Phone", value: data.phone || 'N/A' }, { name: "Location", value: `${data.city}, ${data.country}` }, { name: "Requirement", value: "```" + data.customRequirementText + "```" } ], timestamp: new Date().toISOString() }] };
+            document.getElementById('success-title').textContent = 'Inquiry Submitted!';
+        } else {
+            const selInst = instanceData[data.gpuInstance];
+            const totalGpus = parseInt(selInst['Total Dedicated GPUs']) * parseInt(data.instanceCount);
+            const startTime = data.startTime ? new Date(data.startTime).toLocaleString() : 'Not set';
+
+            payload = {
+                username: "Ceres - New Order",
+                embeds: [{
+                    title: "New GPU Reservation Placed!",
+                    color: 5814783,
+                    fields: [
+                        { name: "Name", value: `${data.firstName} ${data.lastName}`, inline: true },
+                        { name: "Company", value: data.company || 'N/A', inline: true },
+                        { name: "Title", value: data.title || 'N/A', inline: true },
+                        { name: "Contact Email", value: `[${data.email}](mailto:${data.email})`, inline: true },
+                        { name: "Contact Phone", value: data.phone || 'N/A', inline: true },
+                        { name: "Location", value: `${data.city}, ${data.country}`, inline: true },
+
+                        { name: "GPU Model", value: selInst['GPU Instance'], inline: true },
+                        { name: "Instance Quantity", value: data.instanceCount, inline: true },
+                        { name: "Total GPUs", value: `${totalGpus} GPUs`, inline: true },
+                        { name: "GPU Per Instance", value: `${selInst['Total Dedicated GPUs']}`, inline: true },
+                        { name: "Instance Type", value: selInst['Instance Type'], inline: true },
+                        { name: "Base OS Image", value: selInst['OS Image Available'], inline: true },
+                        { name: "Available Regions", value: selInst['Regions Available'] },
+                        { name: "Instance Specs", value: `${selInst['VRAM']} VRAM | ${selInst['CPU']} CPU | ${selInst['RAM']} RAM | ${selInst['Storage']} Storage` },
+
+                        { name: "Start Time (IST)", value: startTime, inline: true },
+                        { name: "Duration", value: data.duration || 'Not set', inline: true },
+                        { name: "Payment Method", value: data.paymentMethod, inline: true },
+                        { name: "Subtotal", value: document.getElementById('cost-subtotal').textContent, inline: true },
+                        { name: "Tax (18%)", value: document.getElementById('cost-tax').textContent, inline: true },
+                        { name: "Gateway (3%)", value: document.getElementById('cost-gateway').textContent, inline: true },
+                        { name: "Total Cost", value: `**${document.getElementById('cost-total').textContent}**`, inline: false }
+                    ],
+                    timestamp: new Date().toISOString()
+                }]
+            };
+        }
+
+        try {
+            btn.disabled = true; btn.textContent = 'Submitting...';
+            const res = await fetch(DISCORD_WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!res.ok) throw new Error(`Webhook failed: ${res.status}`);
+            showSuccessPage();
+        } catch (error) {
+            console.error('Submission Error:', error); showNotification('Error submitting request. Please try again.');
+            btn.disabled = false; btn.textContent = isCustom ? 'Submit Inquiry' : 'Place Order';
+        }
+    }
+    
+    function showSuccessPage() {
+        document.getElementById('reservationForm').style.display = 'none';
+        document.getElementById('success-page').style.display = 'block';
+        localStorage.removeItem('ceresFormData'); localStorage.removeItem('ceresCurrentStep');
+    }
+</script>
+
+</body>
+</html>
