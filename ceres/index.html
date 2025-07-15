@@ -160,7 +160,7 @@
                         <div id="cost-instance-details">Select an instance and duration...</div>
                         <div class="cost-item"><span>Subtotal Instance Cost</span><span id="cost-subtotal">$0.00</span></div>
                         <div class="cost-item"><span>GST/VAT/Sales Tax (18%)</span><span id="cost-tax">$0.00</span></div>
-                        <div class="cost-item"><span>Payment Gateway Fees (1.5%)</span><span id="cost-gateway">$0.00</span></div>
+                        <div class="cost-item"><span>Payment Gateway Fees (4.5%)</span><span id="cost-gateway">$0.00</span></div>
                         <div class="cost-item cost-total"><span>Total Cost</span><span id="cost-total">$0.00</span></div>
                     </div>
                     <div class="btn-group"><button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button><button type="button" class="btn btn-primary" onclick="nextStep()">Next</button></div>
@@ -194,7 +194,7 @@
 
 <script>
     const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1393624294684360876/s08ygYLbeOAu2em3bzcrG-4tD7u4a8wxi_DWBc3EUvYSiZvSmfbRtAbHBpLFjs8er4Cz';
-    const TAX_RATE = 0.18, GATEWAY_FEE_RATE = 0.015;
+    const TAX_RATE = 0.18, GATEWAY_FEE_RATE = 0.045;
     let currentStep = 1, instanceData = [], notificationTimeout;
     const form = document.getElementById('reservationForm');
     const formSteps = document.querySelectorAll('.form-step');
@@ -469,7 +469,7 @@
             <hr style="border-color:var(--border-color);margin:1rem 0;">
             <div class="review-item"><strong>Subtotal:</strong> ${document.getElementById('cost-subtotal').textContent}</div>
             <div class="review-item"><strong>Tax (18%):</strong> ${document.getElementById('cost-tax').textContent}</div>
-            <div class="review-item"><strong>Gateway (1.5%):</strong> ${document.getElementById('cost-gateway').textContent}</div>
+            <div class="review-item"><strong>Gateway (4.5%):</strong> ${document.getElementById('cost-gateway').textContent}</div>
             <div class="review-item"><strong>Total Cost:</strong> ${document.getElementById('cost-total').textContent}</div>
             <div class="review-item"><strong>Pay Method:</strong> ${payMth}</div>`;
 
@@ -520,7 +520,7 @@
                         { name: "Payment Method", value: data.paymentMethod, inline: true },
                         { name: "Subtotal", value: document.getElementById('cost-subtotal').textContent, inline: true },
                         { name: "Tax (18%)", value: document.getElementById('cost-tax').textContent, inline: true },
-                        { name: "Gateway (1.5%)", value: document.getElementById('cost-gateway').textContent, inline: true },
+                        { name: "Gateway (4.5%)", value: document.getElementById('cost-gateway').textContent, inline: true },
                         { name: "Total Cost", value: `**${document.getElementById('cost-total').textContent}**`, inline: false }
                     ],
                     timestamp: new Date().toISOString()
