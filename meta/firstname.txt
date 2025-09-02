@@ -1,8 +1,8 @@
-GB300::true
-GB200::true
-B300::true
-B200::true
-H200::true
-H100::true
-A100::true
-V100::true
+GB300::True
+GB200::True
+B300::True
+B200::True
+H200::True
+H100::True
+A100::True
+V100::True
